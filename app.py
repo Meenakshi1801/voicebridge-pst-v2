@@ -234,7 +234,7 @@ def make_reference(student_id: str, task_id: str) -> str:
 
 
 def submissions_to_csv(
-    submissions: list[dict[str, Any]]
+    submissions: list[dict[str, Any]],
 ) -> bytes:
 
     output = StringIO()
@@ -316,20 +316,21 @@ if page == "Home":
         "Activity and Analytics Platform"
     )
 
-    st.markdown(
-        """
-        <div style="line-height:1.3; margin-top:0.25rem;">
-            <span style="font-size:14px; color:#666;">
-                Conceptualized and Developed by
-            </span><br>
+    developer_html = (
+        '<div style="line-height:1.35; margin-top:0.25rem;">'
+        '<span style="font-size:14px; color:#666;">'
+        'Conceptualized and Developed by'
+        '</span><br>'
+        '<b>Dr. Meenakshi Dwivedi</b><br>'
+        'Assistant Professor<br>'
+        'Department of Education / School of Education<br>'
+        'Mahatma Jyotiba Phule Rohilkhand University<br>'
+        'Bareilly, Uttar Pradesh, India'
+        '</div>'
+    )
 
-            <b>Dr. Meenakshi Dwivedi</b><br>
-            Assistant Professor<br>
-            Department of Education / School of Education<br>
-            Mahatma Jyotiba Phule Rohilkhand University,
-            Bareilly, Uttar Pradesh, India
-        </div>
-        """,
+    st.markdown(
+        developer_html,
         unsafe_allow_html=True,
     )
 
