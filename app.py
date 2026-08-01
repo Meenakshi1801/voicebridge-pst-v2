@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 from datetime import datetime
 from io import StringIO
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -10,17 +11,28 @@ import pandas as pd
 import streamlit as st
 
 
+# =======================================================
+# PAGE CONFIGURATION
+# =======================================================
+
+# Unicode escape prevents the microphone icon from becoming corrupted.
+MIC_ICON = "\U0001F399"
+
 st.set_page_config(
     page_title="VoiceBridge-PST",
-    page_icon=":microphone:",
+    page_icon=MIC_ICON,
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 IST = ZoneInfo("Asia/Kolkata")
 
+APP_DIR = Path(__file__).resolve().parent
+PROFILE_IMAGE = APP_DIR / "MD_pic.png"
+
 
 # =======================================================
-# Subject-wise task bank
+# SUBJECT-WISE TASK BANK
 # =======================================================
 
 TASK_BANK: dict[str, list[tuple[str, str, str]]] = {
@@ -44,6 +56,7 @@ TASK_BANK: dict[str, list[tuple[str, str, str]]] = {
             "to Class VII students?",
         ),
     ],
+
     "Pedagogy of Science": [
         (
             "SCI-01",
@@ -54,48 +67,49 @@ TASK_BANK: dict[str, list[tuple[str, str, str]]] = {
         (
             "SCI-02",
             "Concept Explanation",
-            "How would you introduce evaporation through a familiar "
-            "daily-life situation?",
+            "How would you introduce evaporation through a familiar daily-life "
+            "situation?",
         ),
         (
             "SCI-03",
             "Short Activity Design",
-            "Suggest a short classroom activity to demonstrate that air "
-            "occupies space.",
+            "Suggest a short classroom activity to demonstrate that air occupies "
+            "space.",
         ),
     ],
+
     "Pedagogy of Social Science": [
         (
             "SOC-01",
             "Misconception Diagnosis",
-            "A Class VIII student says that democracy only means voting. "
-            "How will you respond as a teacher?",
+            "A Class VIII student says that democracy only means voting. How will "
+            "you respond as a teacher?",
         ),
         (
             "SOC-02",
             "Concept Explanation",
-            "How would you explain equality and equity through a classroom "
-            "or community example?",
+            "How would you explain equality and equity through a classroom or "
+            "community example?",
         ),
         (
             "SOC-03",
             "Classroom Engagement",
-            "Students find history dates boring and disconnected from life. "
-            "What teaching strategy will you use?",
+            "Students find history dates boring and disconnected from life. What "
+            "teaching strategy will you use?",
         ),
     ],
+
     "Pedagogy of English": [
         (
             "ENG-01",
             "Learner Support",
-            "A student can read a passage aloud but cannot infer its meaning. "
-            "How will you support the learner?",
+            "A student can read a passage aloud but cannot infer its meaning. How "
+            "will you support the learner?",
         ),
         (
             "ENG-02",
             "Classroom Engagement",
-            "Students hesitate to speak in English during class. What will "
-            "you do?",
+            "Students hesitate to speak in English during class. What will you do?",
         ),
         (
             "ENG-03",
@@ -104,12 +118,13 @@ TASK_BANK: dict[str, list[tuple[str, str, str]]] = {
             "memorisation?",
         ),
     ],
+
     "Pedagogy of Hindi": [
         (
             "HIN-01",
             "Misconception Diagnosis",
-            "A student memorises a poem but cannot explain its meaning. "
-            "How will you respond?",
+            "A student memorises a poem but cannot explain its meaning. How will "
+            "you respond?",
         ),
         (
             "HIN-02",
@@ -119,36 +134,37 @@ TASK_BANK: dict[str, list[tuple[str, str, str]]] = {
         (
             "HIN-03",
             "Classroom Engagement",
-            "Students are not interested in reading a Hindi passage aloud. "
-            "What will you do?",
+            "Students are not interested in reading a Hindi passage aloud. What "
+            "will you do?",
         ),
     ],
+
     "Pedagogy of Commerce": [
         (
             "COM-01",
             "Misconception Diagnosis",
-            "A student says that sales and profit are the same. How will you "
-            "respond?",
+            "A student says that sales and profit are the same. How will you respond?",
         ),
         (
             "COM-02",
             "Concept Explanation",
-            "How would you explain assets and liabilities using examples "
-            "from daily life?",
+            "How would you explain assets and liabilities using examples from daily "
+            "life?",
         ),
         (
             "COM-03",
             "Classroom Engagement",
-            "Students find accounting rules mechanical and boring. What "
-            "teaching strategy will you use?",
+            "Students find accounting rules mechanical and boring. What teaching "
+            "strategy will you use?",
         ),
     ],
+
     "Pedagogy of Computer Science": [
         (
             "CS-01",
             "Misconception Diagnosis",
-            "A student says that the internet and the web are the same. "
-            "How will you respond?",
+            "A student says that the internet and the web are the same. How will "
+            "you respond?",
         ),
         (
             "CS-02",
@@ -158,20 +174,26 @@ TASK_BANK: dict[str, list[tuple[str, str, str]]] = {
         (
             "CS-03",
             "Inclusive Adaptation",
-            "How would you support a learner who has limited access to a "
-            "computer outside the classroom?",
+            "How would you support a learner who has limited access to a computer "
+            "outside the classroom?",
         ),
     ],
 }
 
 
 # =======================================================
-# Scoring rubric
+# SCORING RUBRIC
 # =======================================================
 
 RUBRIC: list[tuple[str, str]] = [
-    ("conceptual_clarity", "Conceptual Clarity"),
-    ("pedagogical_reasoning", "Pedagogical Reasoning"),
+    (
+        "conceptual_clarity",
+        "Conceptual Clarity",
+    ),
+    (
+        "pedagogical_reasoning",
+        "Pedagogical Reasoning",
+    ),
     (
         "learner_centred_explanation",
         "Learner-Centred Explanation",
@@ -195,11 +217,12 @@ RUBRIC: list[tuple[str, str]] = [
 ]
 
 RUBRIC_LABELS = dict(RUBRIC)
+
 MAX_SCORE = len(RUBRIC) * 5
 
 
 # =======================================================
-# Session storage
+# SESSION STORAGE
 # =======================================================
 
 if "submissions" not in st.session_state:
@@ -213,10 +236,12 @@ if "score_form_version" not in st.session_state:
 
 
 # =======================================================
-# Helper functions
+# HELPER FUNCTIONS
 # =======================================================
 
 def now_ist() -> datetime:
+    """Return the current date and time in India."""
+
     return datetime.now(IST)
 
 
@@ -224,8 +249,9 @@ def make_reference(
     student_id: str,
     task_id: str,
 ) -> str:
+    """Create a unique submission reference."""
 
-    safe_id = "".join(
+    safe_student_id = "".join(
         character
         for character in student_id.upper()
         if character.isalnum()
@@ -235,12 +261,17 @@ def make_reference(
         "%Y%m%d%H%M%S%f"
     )
 
-    return f"{safe_id}-{task_id}-{timestamp}"
+    return (
+        f"{safe_student_id}-"
+        f"{task_id}-"
+        f"{timestamp}"
+    )
 
 
 def response_label(
     submission: dict[str, Any],
 ) -> str:
+    """Create the label shown in response selectors."""
 
     return (
         f'{submission["student_id"]} | '
@@ -250,34 +281,31 @@ def response_label(
     )
 
 
-def get_submission(
-    reference: str,
-) -> dict[str, Any] | None:
-
-    return next(
-        (
-            submission
-            for submission in st.session_state.submissions
-            if submission["submission_reference"] == reference
-        ),
-        None,
-    )
-
-
 def response_selector(
     label: str,
     key: str,
+    submissions: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any] | None:
+    """Display a selector and return the selected response."""
+
+    available_submissions = (
+        submissions
+        if submissions is not None
+        else st.session_state.submissions
+    )
+
+    if not available_submissions:
+        return None
 
     references = [
         submission["submission_reference"]
-        for submission in st.session_state.submissions
+        for submission in available_submissions
     ]
 
     labels = {
         submission["submission_reference"]:
         response_label(submission)
-        for submission in st.session_state.submissions
+        for submission in available_submissions
     }
 
     selected_reference = st.selectbox(
@@ -287,21 +315,28 @@ def response_selector(
         key=key,
     )
 
-    return get_submission(
-        selected_reference
+    return next(
+        (
+            submission
+            for submission in available_submissions
+            if submission["submission_reference"]
+            == selected_reference
+        ),
+        None,
     )
 
 
 def generate_feedback(
     scores: dict[str, int],
 ) -> str:
+    """Generate basic diagnostic feedback."""
 
-    strongest = max(
+    strongest_dimension = max(
         scores,
         key=scores.get,
     )
 
-    weakest = min(
+    weakest_dimension = min(
         scores,
         key=scores.get,
     )
@@ -311,26 +346,32 @@ def generate_feedback(
             "Clarify the central concept and use precise "
             "subject terminology."
         ),
+
         "pedagogical_reasoning": (
             "Explain why the proposed teaching response "
             "is appropriate for the learner."
         ),
+
         "learner_centred_explanation": (
             "Connect the explanation more directly with "
             "learners' prior knowledge and needs."
         ),
+
         "misconception_diagnosis": (
             "Identify the exact misconception or source "
             "of error more precisely."
         ),
+
         "use_of_example_strategy": (
             "Use a clearer example, activity, analogy, "
             "or assessment strategy."
         ),
+
         "reflective_thinking": (
             "Add deeper reflection on limitations, "
             "alternatives, and possible improvement."
         ),
+
         "voice_written_alignment": (
             "Improve consistency between the oral "
             "reasoning and written response."
@@ -339,17 +380,18 @@ def generate_feedback(
 
     return (
         f"Strongest area: "
-        f"{RUBRIC_LABELS[strongest]}. "
+        f"{RUBRIC_LABELS[strongest_dimension]}. "
         f"Priority for improvement: "
-        f"{RUBRIC_LABELS[weakest]}. "
+        f"{RUBRIC_LABELS[weakest_dimension]}. "
         f"Suggested action: "
-        f"{guidance[weakest]}"
+        f"{guidance[weakest_dimension]}"
     )
 
 
 def submissions_to_csv(
     submissions: list[dict[str, Any]],
 ) -> bytes:
+    """Convert submission data into a CSV file."""
 
     output = StringIO()
 
@@ -405,7 +447,23 @@ def submissions_to_csv(
                 "",
             )
 
-        writer.writerow(row)
+        percentage = row.get(
+            "percentage"
+        )
+
+        if isinstance(
+            percentage,
+            (int, float),
+        ):
+
+            row["percentage"] = round(
+                float(percentage),
+                2,
+            )
+
+        writer.writerow(
+            row
+        )
 
     return output.getvalue().encode(
         "utf-8-sig"
@@ -415,6 +473,7 @@ def submissions_to_csv(
 def show_response_content(
     submission: dict[str, Any],
 ) -> None:
+    """Display the complete participant response."""
 
     st.markdown(
         "### Pedagogical Prompt"
@@ -462,13 +521,13 @@ def show_response_content(
 
 
 # =======================================================
-# Home page
+# HOME PAGE
 # =======================================================
 
 def render_home() -> None:
 
-    st.title(
-        "VoiceBridge-PST Dashboard"
+    st.markdown(
+        f"# {MIC_ICON} VoiceBridge-PST Dashboard"
     )
 
     st.subheader(
@@ -476,17 +535,46 @@ def render_home() -> None:
         "Activity and Analytics Platform"
     )
 
-    st.caption(
-        "Conceptualized and Developed by"
+    st.write("")
+
+    photograph_column, information_column = st.columns(
+        [1, 2.6],
+        gap="large",
     )
 
-    st.markdown(
-        "**Dr. Meenakshi Dwivedi**  \n"
-        "Assistant Professor  \n"
-        "Department of Education / School of Education  \n"
-        "Mahatma Jyotiba Phule Rohilkhand University  \n"
-        "Bareilly, Uttar Pradesh, India"
-    )
+    with photograph_column:
+
+        if PROFILE_IMAGE.exists():
+
+            st.image(
+                str(PROFILE_IMAGE),
+                width=240,
+            )
+
+        else:
+
+            st.warning(
+                "Profile photograph not found. "
+                "Upload MD_pic.png in the same "
+                "folder as app.py."
+            )
+
+    with information_column:
+
+        st.caption(
+            "Conceptualized and Developed by"
+        )
+
+        st.markdown(
+            "### Dr. Meenakshi Dwivedi"
+        )
+
+        st.markdown(
+            "Assistant Professor  \n"
+            "Department of Education / School of Education  \n"
+            "Mahatma Jyotiba Phule Rohilkhand University  \n"
+            "Bareilly, Uttar Pradesh, India"
+        )
 
     st.divider()
 
@@ -495,10 +583,10 @@ def render_home() -> None:
     )
 
     st.write(
-        "VoiceBridge-PST is a voice-first activity "
-        "and analytics platform for assessing "
-        "micro-pedagogical reasoning among "
-        "pre-service teachers."
+        "VoiceBridge-PST is a voice-first activity and "
+        "analytics platform designed to support the "
+        "assessment and development of micro-pedagogical "
+        "reasoning among pre-service teachers."
     )
 
     st.header(
@@ -506,10 +594,10 @@ def render_home() -> None:
     )
 
     st.write(
-        "Pedagogical prompt -> Voice reasoning -> "
-        "Written pedagogical response -> Reflective "
-        "response -> Teacher-educator review -> "
-        "Rubric scoring -> Diagnostic feedback"
+        "Pedagogical Prompt → Voice Reasoning → "
+        "Written Pedagogical Response → Reflective Response → "
+        "Teacher-Educator Review → Rubric Scoring → "
+        "Diagnostic Feedback"
     )
 
     st.header(
@@ -527,7 +615,7 @@ def render_home() -> None:
 
 
 # =======================================================
-# Activity submission page
+# ACTIVITY SUBMISSION PAGE
 # =======================================================
 
 def render_activity_submission() -> None:
@@ -575,7 +663,7 @@ def render_activity_submission() -> None:
     selected_task_label = st.selectbox(
         "Task",
         task_labels,
-        key="selected_task",
+        key=f"selected_task_{selected_subject}",
     )
 
     selected_task_index = task_labels.index(
@@ -594,17 +682,17 @@ def render_activity_submission() -> None:
         prompt
     )
 
-    task_col1, task_col2 = st.columns(
+    task_column_1, task_column_2 = st.columns(
         2
     )
 
-    task_col1.text_input(
+    task_column_1.text_input(
         "Task ID",
         value=task_id,
         disabled=True,
     )
 
-    task_col2.text_input(
+    task_column_2.text_input(
         "Task Category",
         value=task_category,
         disabled=True,
@@ -623,8 +711,8 @@ def render_activity_submission() -> None:
     )
 
     st.caption(
-        "Suggested duration: 2-3 minutes. Allow "
-        "microphone access when requested."
+        "Suggested duration: 2-3 minutes. "
+        "Allow microphone access when requested."
     )
 
     form_version = (
@@ -659,11 +747,11 @@ def render_activity_submission() -> None:
             "## Participant Details"
         )
 
-        participant_col1, participant_col2 = (
+        participant_column_1, participant_column_2 = (
             st.columns(2)
         )
 
-        with participant_col1:
+        with participant_column_1:
 
             student_id = st.text_input(
                 "Student ID / Participant Code",
@@ -675,7 +763,7 @@ def render_activity_submission() -> None:
                 placeholder="Enter your name",
             )
 
-        with participant_col2:
+        with participant_column_2:
 
             semester = st.selectbox(
                 "B.Ed. Semester",
@@ -735,11 +823,9 @@ def render_activity_submission() -> None:
             "responses are my own work."
         )
 
-        submit_response = (
-            st.form_submit_button(
-                "Submit Activity",
-                type="primary",
-            )
+        submit_response = st.form_submit_button(
+            "Submit Activity",
+            type="primary",
         )
 
     if not submit_response:
@@ -750,8 +836,7 @@ def render_activity_submission() -> None:
     if not student_id.strip():
 
         errors.append(
-            "Enter your Student ID / "
-            "Participant Code."
+            "Enter your Student ID / Participant Code."
         )
 
     if not participant_name.strip():
@@ -810,7 +895,7 @@ def render_activity_submission() -> None:
         task_id,
     )
 
-    submission = {
+    submission: dict[str, Any] = {
         "submission_reference":
         submission_reference,
 
@@ -887,11 +972,11 @@ def render_activity_submission() -> None:
     )
 
     st.session_state.activity_flash = {
-        "message": (
-            "Your activity has been "
-            "submitted successfully."
-        ),
-        "reference": submission_reference,
+        "message":
+        "Your activity has been submitted successfully.",
+
+        "reference":
+        submission_reference,
     }
 
     st.session_state.activity_form_version += 1
@@ -900,7 +985,7 @@ def render_activity_submission() -> None:
 
 
 # =======================================================
-# Review responses page
+# REVIEW RESPONSES PAGE
 # =======================================================
 
 def render_review_responses() -> None:
@@ -928,21 +1013,21 @@ def render_review_responses() -> None:
 
     st.divider()
 
-    detail_col1, detail_col2, detail_col3 = (
+    detail_column_1, detail_column_2, detail_column_3 = (
         st.columns(3)
     )
 
-    detail_col1.metric(
+    detail_column_1.metric(
         "Participant Code",
         selected_submission["student_id"],
     )
 
-    detail_col2.metric(
+    detail_column_2.metric(
         "Task",
         selected_submission["task_id"],
     )
 
-    detail_col3.metric(
+    detail_column_3.metric(
         "Semester",
         selected_submission["semester"],
     )
@@ -982,7 +1067,7 @@ def render_review_responses() -> None:
 
     st.download_button(
         "Download this audio recording",
-        selected_submission["audio_bytes"],
+        data=selected_submission["audio_bytes"],
         file_name=selected_submission.get(
             "audio_file_name",
             "voice_response.wav",
@@ -996,7 +1081,6 @@ def render_review_responses() -> None:
     if not selected_submission.get(
         "scores"
     ):
-
         return
 
     st.markdown(
@@ -1013,7 +1097,10 @@ def render_review_responses() -> None:
             "Score": [
                 selected_submission[
                     "scores"
-                ][rubric_key]
+                ].get(
+                    rubric_key,
+                    "",
+                )
                 for rubric_key, _ in RUBRIC
             ],
         }
@@ -1025,11 +1112,11 @@ def render_review_responses() -> None:
         use_container_width=True,
     )
 
-    score_col1, score_col2 = st.columns(
+    score_column_1, score_column_2 = st.columns(
         2
     )
 
-    score_col1.metric(
+    score_column_1.metric(
         "Total Score",
         (
             f'{selected_submission["total_score"]}'
@@ -1044,7 +1131,7 @@ def render_review_responses() -> None:
         or 0.0
     )
 
-    score_col2.metric(
+    score_column_2.metric(
         "Percentage",
         f"{percentage_value:.2f}%",
     )
@@ -1062,7 +1149,7 @@ def render_review_responses() -> None:
 
 
 # =======================================================
-# Score responses page
+# SCORE RESPONSES PAGE
 # =======================================================
 
 def render_score_responses() -> None:
@@ -1115,22 +1202,18 @@ def render_score_responses() -> None:
         "5 = Excellent."
     )
 
-    existing_scores = (
-        selected_submission.get(
-            "scores",
-            {},
-        )
+    existing_scores = selected_submission.get(
+        "scores",
+        {},
     )
 
     score_version = (
         st.session_state.score_form_version
     )
 
-    reference = (
-        selected_submission[
-            "submission_reference"
-        ]
-    )
+    reference = selected_submission[
+        "submission_reference"
+    ]
 
     with st.form(
         f"score_form_{reference}_{score_version}"
@@ -1185,11 +1268,11 @@ def render_score_responses() -> None:
             * 100
         )
 
-        metric_col1, metric_col2 = (
+        metric_column_1, metric_column_2 = (
             st.columns(2)
         )
 
-        metric_col1.metric(
+        metric_column_1.metric(
             "Calculated Total",
             (
                 f"{calculated_total}"
@@ -1197,7 +1280,7 @@ def render_score_responses() -> None:
             ),
         )
 
-        metric_col2.metric(
+        metric_column_2.metric(
             "Calculated Percentage",
             f"{calculated_percentage:.2f}%",
         )
@@ -1219,11 +1302,9 @@ def render_score_responses() -> None:
             ),
         )
 
-        save_scores = (
-            st.form_submit_button(
-                "Save Scores and Feedback",
-                type="primary",
-            )
+        save_scores = st.form_submit_button(
+            "Save Scores and Feedback",
+            type="primary",
         )
 
     if not save_scores:
@@ -1268,7 +1349,7 @@ def render_score_responses() -> None:
 
 
 # =======================================================
-# Diagnostic profile page
+# DIAGNOSTIC PROFILE PAGE
 # =======================================================
 
 def render_diagnostic_profile() -> None:
@@ -1280,7 +1361,9 @@ def render_diagnostic_profile() -> None:
     scored_submissions = [
         submission
         for submission in st.session_state.submissions
-        if submission.get("scores")
+        if submission.get(
+            "scores"
+        )
     ]
 
     if not scored_submissions:
@@ -1316,23 +1399,25 @@ def render_diagnostic_profile() -> None:
         f"{selected_student_id}"
     )
 
-    profile_col1, profile_col2, profile_col3 = (
+    profile_column_1, profile_column_2, profile_column_3 = (
         st.columns(3)
     )
 
-    profile_col1.metric(
+    profile_column_1.metric(
         "Name",
         participant_submissions[0]["name"],
     )
 
-    profile_col2.metric(
+    profile_column_2.metric(
         "Semester",
         participant_submissions[0]["semester"],
     )
 
-    profile_col3.metric(
+    profile_column_3.metric(
         "Scored Tasks",
-        len(participant_submissions),
+        len(
+            participant_submissions
+        ),
     )
 
     dimension_means = {
@@ -1344,7 +1429,9 @@ def render_diagnostic_profile() -> None:
                 for submission
                 in participant_submissions
             )
-            / len(participant_submissions)
+            / len(
+                participant_submissions
+            )
         )
         for rubric_key, _ in RUBRIC
     }
@@ -1357,7 +1444,9 @@ def render_diagnostic_profile() -> None:
             for submission
             in participant_submissions
         )
-        / len(participant_submissions)
+        / len(
+            participant_submissions
+        )
     )
 
     strongest_dimension = max(
@@ -1370,28 +1459,42 @@ def render_diagnostic_profile() -> None:
         key=dimension_means.get,
     )
 
-    summary_col1, summary_col2, summary_col3 = (
-        st.columns(3)
+    summary_column_1, summary_column_2, summary_column_3 = (
+        st.columns(
+            [1, 1.4, 1.4]
+        )
     )
 
-    summary_col1.metric(
-        "Average Percentage",
-        f"{average_percentage:.2f}%",
-    )
+    with summary_column_1:
 
-    summary_col2.metric(
-        "Strongest Area",
-        RUBRIC_LABELS[
-            strongest_dimension
-        ],
-    )
+        st.metric(
+            "Average Percentage",
+            f"{average_percentage:.2f}%",
+        )
 
-    summary_col3.metric(
-        "Priority Area",
-        RUBRIC_LABELS[
-            weakest_dimension
-        ],
-    )
+    with summary_column_2:
+
+        st.caption(
+            "Strongest Area"
+        )
+
+        st.success(
+            RUBRIC_LABELS[
+                strongest_dimension
+            ]
+        )
+
+    with summary_column_3:
+
+        st.caption(
+            "Priority Area"
+        )
+
+        st.warning(
+            RUBRIC_LABELS[
+                weakest_dimension
+            ]
+        )
 
     st.markdown(
         "### Dimension-Wise Profile"
@@ -1405,18 +1508,23 @@ def render_diagnostic_profile() -> None:
             ],
 
             "Average Score": [
-                dimension_means[
-                    rubric_key
-                ]
+                round(
+                    dimension_means[
+                        rubric_key
+                    ],
+                    2,
+                )
                 for rubric_key, _ in RUBRIC
             ],
         }
-    ).set_index(
-        "Dimension"
     )
 
     st.bar_chart(
-        profile_dataframe
+        profile_dataframe,
+        x="Average Score",
+        y="Dimension",
+        horizontal=True,
+        height=380,
     )
 
     st.markdown(
@@ -1440,15 +1548,21 @@ def render_diagnostic_profile() -> None:
                 ],
 
                 "Percentage":
-                submission[
-                    "percentage"
-                ],
+                round(
+                    float(
+                        submission[
+                            "percentage"
+                        ]
+                    ),
+                    2,
+                ),
 
                 "Scored Time":
                 submission[
                     "scored_time"
                 ],
             }
+
             for submission
             in participant_submissions
         ]
@@ -1458,6 +1572,19 @@ def render_diagnostic_profile() -> None:
         task_dataframe,
         hide_index=True,
         use_container_width=True,
+        column_config={
+            "Subject":
+            st.column_config.TextColumn(
+                "Pedagogy Subject",
+                width="large",
+            ),
+
+            "Percentage":
+            st.column_config.NumberColumn(
+                "Percentage (%)",
+                format="%.2f",
+            ),
+        },
     )
 
     st.markdown(
@@ -1473,7 +1600,7 @@ def render_diagnostic_profile() -> None:
 
 
 # =======================================================
-# Task analytics page
+# TASK ANALYTICS PAGE
 # =======================================================
 
 def render_task_analytics() -> None:
@@ -1485,15 +1612,19 @@ def render_task_analytics() -> None:
     scored_submissions = [
         submission
         for submission in st.session_state.submissions
-        if submission.get("scores")
+        if submission.get(
+            "scores"
+        )
     ]
 
-    analytics_col1, analytics_col2, \
-        analytics_col3, analytics_col4 = (
-            st.columns(4)
-        )
+    (
+        analytics_column_1,
+        analytics_column_2,
+        analytics_column_3,
+        analytics_column_4,
+    ) = st.columns(4)
 
-    analytics_col1.metric(
+    analytics_column_1.metric(
         "Participants",
         len(
             {
@@ -1504,14 +1635,14 @@ def render_task_analytics() -> None:
         ),
     )
 
-    analytics_col2.metric(
+    analytics_column_2.metric(
         "Submissions",
         len(
             st.session_state.submissions
         ),
     )
 
-    analytics_col3.metric(
+    analytics_column_3.metric(
         "Scored Responses",
         len(
             scored_submissions
@@ -1526,12 +1657,14 @@ def render_task_analytics() -> None:
             for submission
             in scored_submissions
         )
-        / len(scored_submissions)
+        / len(
+            scored_submissions
+        )
         if scored_submissions
         else 0.0
     )
 
-    analytics_col4.metric(
+    analytics_column_4.metric(
         "Mean Percentage",
         f"{mean_percentage:.2f}%",
     )
@@ -1572,19 +1705,26 @@ def render_task_analytics() -> None:
                 ],
 
                 "Percentage":
-                submission[
-                    "percentage"
-                ],
+                round(
+                    float(
+                        submission[
+                            "percentage"
+                        ]
+                    ),
+                    2,
+                ),
 
                 **{
                     rubric_label:
                     submission["scores"][
                         rubric_key
                     ]
+
                     for rubric_key, rubric_label
                     in RUBRIC
                 },
             }
+
             for submission
             in scored_submissions
         ]
@@ -1607,16 +1747,50 @@ def render_task_analytics() -> None:
         )
     )
 
-    st.bar_chart(
-        subject_summary.set_index(
-            "Subject"
-        )
+    subject_summary["Percentage"] = (
+        subject_summary[
+            "Percentage"
+        ].round(2)
     )
+
+    if len(
+        subject_summary
+    ) == 1:
+
+        st.metric(
+            subject_summary.iloc[0][
+                "Subject"
+            ],
+            f'{subject_summary.iloc[0]["Percentage"]:.2f}%',
+        )
+
+    else:
+
+        st.bar_chart(
+            subject_summary,
+            x="Percentage",
+            y="Subject",
+            horizontal=True,
+            height=300,
+        )
 
     st.dataframe(
         subject_summary,
         hide_index=True,
         use_container_width=True,
+        column_config={
+            "Subject":
+            st.column_config.TextColumn(
+                "Pedagogy Subject",
+                width="large",
+            ),
+
+            "Percentage":
+            st.column_config.NumberColumn(
+                "Mean Percentage (%)",
+                format="%.2f",
+            ),
+        },
     )
 
     st.markdown(
@@ -1635,16 +1809,30 @@ def render_task_analytics() -> None:
         )
     )
 
+    task_summary["Percentage"] = (
+        task_summary[
+            "Percentage"
+        ].round(2)
+    )
+
     st.bar_chart(
-        task_summary.set_index(
-            "Task"
-        )
+        task_summary,
+        x="Task",
+        y="Percentage",
+        height=300,
     )
 
     st.dataframe(
         task_summary,
         hide_index=True,
         use_container_width=True,
+        column_config={
+            "Percentage":
+            st.column_config.NumberColumn(
+                "Mean Percentage (%)",
+                format="%.2f",
+            ),
+        },
     )
 
     st.markdown(
@@ -1664,10 +1852,29 @@ def render_task_analytics() -> None:
         )
     )
 
+    category_summary["Percentage"] = (
+        category_summary[
+            "Percentage"
+        ].round(2)
+    )
+
     st.dataframe(
         category_summary,
         hide_index=True,
         use_container_width=True,
+        column_config={
+            "Category":
+            st.column_config.TextColumn(
+                "Task Category",
+                width="large",
+            ),
+
+            "Percentage":
+            st.column_config.NumberColumn(
+                "Mean Percentage (%)",
+                format="%.2f",
+            ),
+        },
     )
 
     st.markdown(
@@ -1682,33 +1889,99 @@ def render_task_analytics() -> None:
             ],
 
             "Mean Score": [
-                analytics_dataframe[
-                    rubric_label
-                ].mean()
+                round(
+                    float(
+                        analytics_dataframe[
+                            rubric_label
+                        ].mean()
+                    ),
+                    2,
+                )
+
                 for _, rubric_label in RUBRIC
             ],
         }
-    ).set_index(
-        "Dimension"
     )
 
     st.bar_chart(
-        dimension_summary
+        dimension_summary,
+        x="Mean Score",
+        y="Dimension",
+        horizontal=True,
+        height=380,
     )
 
     st.markdown(
-        "### Complete Scored Dataset"
+        "### Scored Dataset Summary"
     )
 
+    summary_columns = [
+        "Participant",
+        "Subject",
+        "Task",
+        "Category",
+        "Total Score",
+        "Percentage",
+    ]
+
     st.dataframe(
-        analytics_dataframe,
+        analytics_dataframe[
+            summary_columns
+        ],
         hide_index=True,
         use_container_width=True,
+        column_config={
+            "Participant":
+            st.column_config.TextColumn(
+                "Participant Code"
+            ),
+
+            "Subject":
+            st.column_config.TextColumn(
+                "Pedagogy Subject",
+                width="large",
+            ),
+
+            "Category":
+            st.column_config.TextColumn(
+                "Task Category",
+                width="large",
+            ),
+
+            "Total Score":
+            st.column_config.NumberColumn(
+                "Total Score",
+                format="%d",
+            ),
+
+            "Percentage":
+            st.column_config.NumberColumn(
+                "Percentage (%)",
+                format="%.2f",
+            ),
+        },
     )
+
+    with st.expander(
+        "View Complete Dimension-Wise Dataset"
+    ):
+
+        st.dataframe(
+            analytics_dataframe,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "Percentage":
+                st.column_config.NumberColumn(
+                    "Percentage (%)",
+                    format="%.2f",
+                ),
+            },
+        )
 
 
 # =======================================================
-# Download data page
+# DOWNLOAD DATA PAGE
 # =======================================================
 
 def render_download_data() -> None:
@@ -1797,10 +2070,18 @@ def render_download_data() -> None:
                     "",
                 ),
             }
+
             for submission
             in st.session_state.submissions
         ]
     )
+
+    preview_dataframe["Percentage"] = pd.to_numeric(
+        preview_dataframe[
+            "Percentage"
+        ],
+        errors="coerce",
+    ).round(2)
 
     st.markdown(
         "### Data Preview"
@@ -1810,15 +2091,44 @@ def render_download_data() -> None:
         preview_dataframe,
         hide_index=True,
         use_container_width=True,
+        column_order=[
+            "Participant",
+            "Name",
+            "Subject",
+            "Task",
+            "Scored",
+            "Total Score",
+            "Percentage",
+            "Reference",
+        ],
+        column_config={
+            "Reference":
+            st.column_config.TextColumn(
+                "Submission Reference",
+                width="large",
+            ),
+
+            "Subject":
+            st.column_config.TextColumn(
+                "Pedagogy Subject",
+                width="large",
+            ),
+
+            "Percentage":
+            st.column_config.NumberColumn(
+                "Percentage (%)",
+                format="%.2f",
+            ),
+        },
     )
 
 
 # =======================================================
-# Sidebar and page routing
+# SIDEBAR
 # =======================================================
 
-st.sidebar.title(
-    "VoiceBridge-PST"
+st.sidebar.markdown(
+    f"## {MIC_ICON} VoiceBridge-PST"
 )
 
 st.sidebar.caption(
@@ -1859,6 +2169,11 @@ st.sidebar.metric(
         )
     ),
 )
+
+
+# =======================================================
+# PAGE ROUTING
+# =======================================================
 
 PAGES = {
     "Home":
